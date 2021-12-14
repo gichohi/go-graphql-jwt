@@ -8,19 +8,33 @@ import (
 	"fmt"
 	"github.com/gichohi/blog/graph/generated"
 	"github.com/gichohi/blog/graph/model"
+	"github.com/gichohi/blog/internal/auth"
 	"github.com/gichohi/blog/internal/models"
 	"github.com/gichohi/blog/internal/repository"
 	"github.com/gichohi/blog/internal/util"
+	"github.com/gichohi/blog/pkg/jwt"
 	uuid "github.com/satori/go.uuid"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.NewPost) (*model.Post, error) {
+	user := auth.ForContext(ctx)
+	if user == nil {
+		return &model.Post{}, fmt.Errorf("access denied")
+	}
+
 	var post *models.Post
 	post.ID = uuid.NewV4()
 	post.Title = input.Title
 	post.Body = input.Body
 	repository.CreatePost(post)
-	return &model.Post{ID: post.ID.String(), Title: post.Title, Body: post.Body}, nil
+	graphUser := &model.User{
+		UserID: user.ID,
+		Email: user.Email,
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+	}
+
+	return &model.Post{ID: post.ID.String(), Title: post.Title, Body: post.Body, User: graphUser}, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
@@ -34,15 +48,34 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 
 	repository.CreateUser(user)
 
-	return user.ID.String(), nil
+	token := jwt.GenerateToken(user.Email)
+
+	return token, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	email := input.Email
+	password := input.Password
+	authenticate := util.Authenticate(email, password)
+	if !authenticate {
+		return "", &models.WrongUsernameOrPasswordError{}
+	}
+
+	token := jwt.GenerateToken(email)
+
+	return token, nil
 }
 
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	email, err := jwt.ParseToken(input.Token)
+	if err != nil {
+		return "", fmt.Errorf("access denied")
+	}
+	token := jwt.GenerateToken(email)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
@@ -50,7 +83,13 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 	var posts []models.Post
 	posts = repository.GetPosts()
 	for _, post := range posts {
-		resultPosts = append(resultPosts,  &model.Post{ID: post.ID.String(), Title: post.Title, Body: post.Body})
+		graphUser := &model.User{
+			UserID: post.User.ID,
+			Email: post.User.Email,
+			FirstName: post.User.FirstName,
+			LastName: post.User.LastName,
+		}
+		resultPosts = append(resultPosts,  &model.Post{ID: post.ID.String(), Title: post.Title, Body: post.Body, User: graphUser})
 	}
 	return resultPosts, nil
 }

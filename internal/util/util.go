@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/gichohi/blog/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 )
@@ -27,3 +28,9 @@ func comparePasswords(hashedPwd string, pwd string) bool {
 
 	return true
 }
+
+func Authenticate(email string, password string) bool {
+	user := repository.GetUserByEmail(email)
+	return comparePasswords(user.Password, password)
+}
+

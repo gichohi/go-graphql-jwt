@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/gichohi/blog/internal/auth"
+	"github.com/gichohi/blog/internal/pkg/db"
+	"github.com/go-chi/chi"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +22,11 @@ func main() {
 		port = defaultPort
 	}
 
+	router := chi.NewRouter()
 
+	router.Use(auth.Middleware())
+
+	db.Connect()
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 
