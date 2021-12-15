@@ -5,7 +5,6 @@ import (
 	"github.com/gichohi/blog/internal/models"
 	"github.com/gichohi/blog/internal/repository"
 	"github.com/gichohi/blog/pkg/jwt"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 )
 
@@ -34,13 +33,6 @@ func Middleware() func(http.Handler) http.Handler {
 				return
 			}
 			user := repository.GetUserByEmail(email)
-
-			id, err := repository.GetUserIdByEmail(email)
-			if err != nil {
-				next.ServeHTTP(w, r)
-				return
-			}
-			user.ID, _ = uuid.FromString(id)
 			ctx := context.WithValue(r.Context(), userCtxKey, &user)
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)

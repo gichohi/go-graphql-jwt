@@ -2,11 +2,6 @@
 
 package model
 
-import (
-	uuid "github.com/satori/go.uuid"
-	"time"
-)
-
 type Login struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -18,14 +13,14 @@ type NewPost struct {
 }
 
 type NewUser struct {
-	Email       string    `json:"email"`
-	FirstName   string    `json:"firstname"`
-	LastName    string    `json:"lastname"`
-	Password    string    `json:"password"`
+	Email     string `json:"email"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Password  string `json:"password"`
 }
 
 type Post struct {
-	ID    string `json:"user_id"`
+	ID    string `json:"id"`
 	Title string `json:"title"`
 	Body  string `json:"body"`
 	User  *User  `json:"user"`
@@ -36,11 +31,9 @@ type RefreshTokenInput struct {
 }
 
 type User struct {
-	UserID   uuid.UUID `json:"user_id"`
-	Email       string    `json:"email"`
-	FirstName   string    `json:"firstname"`
-	LastName    string    `json:"lastname"`
-	Password    string    `json:"password"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Password  string `json:"password"`
 }

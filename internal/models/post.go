@@ -1,11 +1,7 @@
 package models
 
-import (
-	uuid "github.com/satori/go.uuid"
-)
-
 type Post struct {
-	ID   uuid.UUID
+	ID   	 string
 	Title    string
 	Body     string
 	User     *User

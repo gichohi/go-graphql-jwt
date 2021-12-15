@@ -11,8 +11,10 @@ type Post {
 
 type User {
   id: ID!
+  email: String!
   firstname: String!
   lastname: String!
+  password: String!
 }
 
 type Query {
@@ -30,6 +32,8 @@ input RefreshTokenInput{
 
 input NewUser {
   email: String!
+  firstname: String!
+  lastname: String!
   password: String!
 }
 
